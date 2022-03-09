@@ -1,0 +1,16 @@
+Create a Todo App, user can
+Add a task
+Delete a task
+Mark the task as done - Once the task is marked done
+Edit the task (update the task)
+
+Task - done or pending
+Change the title or status of the task
+
+GET /tasks/all - create a route that can all the tasks
+DELETE /task/:taskId - delete a task 
+POST /task -> update task as done or edit task
+
+GET /tasks/:status - status = done/pending - return all done/pending tasks
+
+Only backend, UI is not required
