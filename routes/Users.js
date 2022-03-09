@@ -29,9 +29,13 @@ users.post("/register", (req, res) => {
           userData.password = hash;
           User.create(userData)
             .then((user) => {
-              let token = jwt.sign(user.id, process.env.SECRET_KEY, {
-                expiresIn: "24d",
-              });
+              let token = jwt.sign(
+                { user_id: user.id },
+                process.env.SECRET_KEY,
+                {
+                  expiresIn: "24d",
+                }
+              );
               res.json({ token: token });
             })
             .catch((err) => {
@@ -57,7 +61,7 @@ users.post("/login", (req, res) => {
       if (user) {
         //pswd provided    //hashed pswd, stored
         if (bcrypt.compareSync(req.body.password, user.password)) {
-          let token = jwt.sign(user.id, process.env.SECRET_KEY, {
+          let token = jwt.sign({ user_id: user.id }, process.env.SECRET_KEY, {
             expiresIn: "24d",
           });
           res.send({ token: token });
