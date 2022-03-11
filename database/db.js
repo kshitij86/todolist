@@ -1,8 +1,10 @@
-const Sequelize = require("sequelize"); //library functions 
+//Use Sequelize for library functions
+const Sequelize = require("sequelize");
+
+// Object to export and use database functionality outside of module
 const db = {};
 
-//
-//create a new object of Sequelize
+//Create a new object of Sequelize for database connection
 const sequelize = new Sequelize("todo", "root", "1234", {
   host: "localhost",
   dialect: "mysql",
@@ -16,7 +18,10 @@ const sequelize = new Sequelize("todo", "root", "1234", {
   },
 }); //creating the database connection
 
-db.sequelize = sequelize; //connection that has been created 
-db.Sequelize = Sequelize; //creating a new Sequelize -> expose the library functionality
+//Connection that has been created
+db.sequelize = sequelize;
+
+//Expose the library functionality
+db.Sequelize = Sequelize;
 
 module.exports = db;

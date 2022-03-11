@@ -9,7 +9,7 @@ Change the title or status of the task
 
 GET /tasks/all - create a route that can all the tasks
 DELETE /task/:taskId - delete a task 
-POST /task -> update task as done or edit task
+PUT /task -> update task as done or edit task
 
 GET /tasks/:status - status = done/pending - return all done/pending tasks
 

@@ -1,15 +1,14 @@
 var express = require("express");
 var tasks = express.Router();
-const cors = require("cors");
 const jwt = require("jsonwebtoken");
 
 const Task = require("../models/Task");
 
-tasks.use(cors());
-
-//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6InVzZXIxIiwiZW1haWwiOiJ1c2VyMUBnbWFpbC5jb20iLCJwYXNzd29yZCI6IiQyYiQxMCRlOEhBeGlRN2NLWG5vTjhiQjRvZEoueGVkS2QvalVnNFVHc3lkcnBTamkuejBIb09PRS5NcSIsInVwZGF0ZWRBdCI6IjIwMjItMDMtMDhUMTE6NTE6MzguNTUzWiIsImNyZWF0ZWRBdCI6IjIwMjItMDMtMDhUMTE6NTE6MzguNTUzWiIsImlhdCI6MTY0Njc0MDI5OCwiZXhwIjoxNjQ4ODEzODk4fQ.maSERRVqKqpfMRdX20BigWomTsyVcH95ECeovSe6Keo
-
 process.env.SECRET_KEY = "secret";
+
+/**
+ * These are authorized/protected requests so a token is mandatory
+ */
 
 //Get all tasks for user
 tasks.get("/tasks", function (req, res, next) {
@@ -18,6 +17,7 @@ tasks.get("/tasks", function (req, res, next) {
       req.headers["authorization"],
       process.env.SECRET_KEY
     );
+    //Find all the tasks for that user
     Task.findAll({
       where: {
         user_id: decoded.id,
@@ -88,7 +88,7 @@ tasks.get("/task/status/:id", function (req, res, next) {
   }
 });
 
-// Create a new task 
+// Create a new task
 tasks.post("/task", function (req, res, next) {
   if (req.headers["authorization"]) {
     if (!req.body.name && !req.body.status) {
@@ -101,6 +101,9 @@ tasks.post("/task", function (req, res, next) {
         req.headers["authorization"],
         process.env.SECRET_KEY
       );
+      /**
+       * Every task has a user_id associated with it, so that needs to be part of task created
+       */
       const user_id = decoded.id;
       req.body.user_id = user_id;
       console.log("req-body", req.body);
@@ -118,7 +121,7 @@ tasks.post("/task", function (req, res, next) {
   }
 });
 
-// Delete a task 
+// Delete a task
 tasks.delete("/task/:id", function (req, res, next) {
   if (req.headers["authorization"]) {
     var decoded = jwt.verify(
@@ -126,6 +129,9 @@ tasks.delete("/task/:id", function (req, res, next) {
       process.env.SECRET_KEY
     );
     console.log("user_decoded_id", decoded.id);
+    /**
+     * While finding a user, the user_id is passed to make sure the user that created task is deleting it
+     */
     Task.findOne({
       where: {
         user_id: decoded.id,
@@ -151,7 +157,10 @@ tasks.delete("/task/:id", function (req, res, next) {
         }
       })
       .catch((err) => {
-        res.json({ status: "failed", message: "Task not found or task does not belong to user" });
+        res.json({
+          status: "failed",
+          message: "Task not found or task does not belong to user",
+        });
       });
   } else {
     res.json({ status: "failed", message: "Token not passed !" });
@@ -159,6 +168,15 @@ tasks.delete("/task/:id", function (req, res, next) {
   }
 });
 
+// Modify a task/Edit a task
+/**
+ * When a task is modified, the entire object should be provided
+ * {
+ *   "name": "friday",
+ *   "status": "done"
+ * }
+ *
+ */
 tasks.put("/task/edit/:id", function (req, res, next) {
   if (req.headers["authorization"]) {
     if (!req.body.name && !req.body.status) {
@@ -172,6 +190,7 @@ tasks.put("/task/edit/:id", function (req, res, next) {
         process.env.SECRET_KEY
       );
       console.log("user_decoded_id", decoded.id);
+      //verify that task exists
       Task.findOne({
         where: {
           user_id: decoded.id,
@@ -180,14 +199,15 @@ tasks.put("/task/edit/:id", function (req, res, next) {
       })
         .then((task) => {
           if (task) {
+            //Update the value in the database
             Task.update(
-              { name: req.body.name },
+              { name: req.body.name, status: req.body.status },
               { where: { id: req.params.id } }
             )
               .then(() => {
                 res.json({ status: "success", message: "Task Updated !" });
               })
-              .error((err) => handleError(err));
+              .catch((err) => console.log(err));
           } else {
             res.json({ status: "failed", message: "Task not found" });
           }
@@ -202,13 +222,14 @@ tasks.put("/task/edit/:id", function (req, res, next) {
   }
 });
 
+//Update a task as done/complete
+//No request body needed
 tasks.put("/task/complete/:id", function (req, res, next) {
   if (req.headers["authorization"]) {
     var decoded = jwt.verify(
       req.headers["authorization"],
       process.env.SECRET_KEY
     );
-    console.log("user_decoded_id", decoded.id);
     Task.findOne({
       where: {
         user_id: decoded.id,
@@ -221,7 +242,7 @@ tasks.put("/task/complete/:id", function (req, res, next) {
             .then(() => {
               res.json({ status: "success", message: "Task Updated !" });
             })
-            .error((err) => handleError(err));
+            .catch((err) => console.log(err));
         } else {
           res.json({ status: "failed", message: "Task not found" });
         }

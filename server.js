@@ -1,16 +1,17 @@
+//Handling imports
 var express = require("express");
-// var cors = require("cors"); //cross origin resource sharing
 var bodyParser = require("body-parser");
 var app = express();
 var port = process.env.PORT || 8080;
 var db = require("./database/db");
 
-app.use(bodyParser.json()); //setting it up to handle JSON
-// app.use(cors());
+//Setting it up to handle JSON
+app.use(bodyParser.json());
 
 var Users = require("./routes/Users");
 var Tasks = require("./routes/Tasks");
 
+//Initial setup for database tables and sync
 db.sequelize
   .sync({ force: true })
   .then(() => {
@@ -20,10 +21,13 @@ db.sequelize
     console.log(err.message);
   });
 
-app.use("/users", Users); //for user routes url -> localhost:PORT/users/
-app.use("/api", Tasks); //for task related functionality -> localhost:PORT/api/
+//For user routes url -> localhost:PORT/users/
+app.use("/users", Users);
 
+//For task related functionality -> localhost:PORT/api/
+app.use("/api", Tasks);
+
+//Listen on the specified port for incoming API requests
 app.listen(port, function () {
-  console.log("Server is running on port: " + port); //appending port no. to string
+  console.log("Server is running on port: " + port);
 });
-
